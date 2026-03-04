@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import useSpellingStore from "../store/useSpellingStore";
 
 export default function Home() {
-  const navigate  = useNavigate();
-  const loadWords = useSpellingStore(s => s.loadWords);
-  const deal      = useSpellingStore(s => s.deal);
-  const getStats  = useSpellingStore(s => s.getStats);
-  const resetAll  = useSpellingStore(s => s.resetAll);
+  const navigate    = useNavigate();
+  const loadWords   = useSpellingStore(s => s.loadWords);
+  const deal        = useSpellingStore(s => s.deal);
+  const getStats    = useSpellingStore(s => s.getStats);
+  const resetAll    = useSpellingStore(s => s.resetAll);
   const isFirstDeal = useSpellingStore(s => s.isFirstDeal);
 
   useEffect(() => { loadWords(); }, []);
@@ -17,9 +17,9 @@ export default function Home() {
     ? Math.round((stats.mastered / stats.total) * 100)
     : 0;
 
-  function handleDeal() {
+  function handleDeal(path) {
     deal();
-    navigate("/session");
+    navigate(path);
   }
 
   return (
@@ -33,7 +33,6 @@ export default function Home() {
           <p className="text-indigo-300 mt-2 text-sm">
             {stats.mastered} / {stats.total} words mastered
           </p>
-          {/* Barra de progreso mini */}
           <div className="w-full bg-gray-100 rounded-full h-2 mt-3">
             <div
               className="bg-indigo-500 h-2 rounded-full transition-all duration-500"
@@ -42,19 +41,31 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Botón Eva */}
+        {/* Botón Eva — Manual */}
         <button
-          onClick={handleDeal}
+          onClick={() => handleDeal("/session")}
           disabled={stats.total === 0}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black py-7 rounded-3xl text-2xl shadow-lg transition-all duration-150 disabled:opacity-40 mb-4"
+          className="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black py-6 rounded-3xl text-xl shadow-lg transition-all duration-150 disabled:opacity-40 mb-3"
         >
-          🎓 Practice!
+          🎓 Practice
           <p className="text-sm font-normal opacity-70 mt-1">
             {isFirstDeal ? "First deal — 10 words" : "Deal next 10 words"}
           </p>
         </button>
 
-        {/* Botón Papá */}
+        {/* Botón Eva — Automático */}
+        <button
+          onClick={() => handleDeal("/session-auto")}
+          disabled={stats.total === 0}
+          className="w-full bg-violet-600 hover:bg-violet-700 active:scale-95 text-white font-black py-6 rounded-3xl text-xl shadow-lg transition-all duration-150 disabled:opacity-40 mb-4"
+        >
+          🤖 Practice (Auto)
+          <p className="text-sm font-normal opacity-70 mt-1">
+            Spell out loud — Wispr validates
+          </p>
+        </button>
+
+        {/* Botón Papá — Rater */}
         <button
           onClick={() => navigate("/rater")}
           className="w-full bg-white hover:bg-gray-50 active:scale-95 text-indigo-600 font-bold py-5 rounded-3xl text-xl shadow-sm border border-indigo-100 transition-all duration-150"
