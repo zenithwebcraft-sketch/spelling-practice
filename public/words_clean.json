@@ -1,403 +1,853 @@
 [
-    {
+  {
     "id": 1,
     "word": "SKY",
     "spelling": "S-K-Y",
-    "sentence": "The birds are flying high in the blue **sky**.",
+    "sentence": "The birds are flying high in the blue sky.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 2,
     "word": "WOW",
     "spelling": "W-O-W",
-    "sentence": "**WOW**, that was a really great jump!",
+    "sentence": "WOW, that was a really great jump!",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 3,
     "word": "HUG",
     "spelling": "H-U-G",
-    "sentence": "I want to give my mom a big **hug**.",
+    "sentence": "I want to give my mom a big hug.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 4,
     "word": "SNAP",
     "spelling": "S-N-A-P",
-    "sentence": "Be careful not to **snap** the small twig.",
+    "sentence": "Be careful not to snap the small twig.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 5,
     "word": "TAPE",
     "spelling": "T-A-P-E",
-    "sentence": "Use the **tape** to fix the ripped paper.",
+    "sentence": "Use the tape to fix the ripped paper.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 6,
     "word": "SIPS",
     "spelling": "S-I-P-S",
-    "sentence": "The baby takes small **sips** of water.",
+    "sentence": "The baby takes small sips of water.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 7,
     "word": "HARD",
     "spelling": "H-A-R-D",
-    "sentence": "Some math problems can be very **hard** to solve.",
+    "sentence": "Some math problems can be very hard to solve.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 8,
     "word": "WHY",
     "spelling": "W-H-Y",
-    "sentence": "Do you know **why** the sun is so bright?",
+    "sentence": "Do you know why the sun is so bright?",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 9,
     "word": "FIRST",
     "spelling": "F-I-R-S-T",
-    "sentence": "She came in **first** place in the race.",
+    "sentence": "She came in first place in the race.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 10,
     "word": "TIDE",
     "spelling": "T-I-D-E",
-    "sentence": "The **tide** comes in and covers the sand at the beach.",
+    "sentence": "The tide comes in and covers the sand at the beach.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 11,
     "word": "BOW",
     "spelling": "B-O-W",
-    "sentence": "She tied a pretty red **bow** on the gift.",
+    "sentence": "She tied a pretty red bow on the gift.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 12,
     "word": "BACK",
     "spelling": "B-A-C-K",
-    "sentence": "Please put your toys **back** in the box.",
+    "sentence": "Please put your toys back in the box.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 13,
     "word": "FIND",
     "spelling": "F-I-N-D",
-    "sentence": "I cannot **find** my other blue sock.",
+    "sentence": "I cannot find my other blue sock.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 14,
     "word": "NAME",
     "spelling": "N-A-M-E",
-    "sentence": "Write your **name** at the top of the page.",
+    "sentence": "Write your name at the top of the page.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 15,
     "word": "OOPS",
     "spelling": "O-O-P-S",
-    "sentence": "**OOPS**, I accidentally dropped my spoon!",
+    "sentence": "OOPS, I accidentally dropped my spoon!",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 16,
     "word": "MORE",
     "spelling": "M-O-R-E",
-    "sentence": "Can I please have some **more** milk?",
+    "sentence": "Can I please have some more milk?",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 17,
     "word": "TOSS",
     "spelling": "T-O-S-S",
-    "sentence": "Let's **toss** the ball back and forth.",
+    "sentence": "Let's toss the ball back and forth.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 18,
     "word": "CHIN",
     "spelling": "C-H-I-N",
-    "sentence": "He has a little bit of food on his **chin**.",
+    "sentence": "He has a little bit of food on his chin.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 19,
     "word": "PARK",
     "spelling": "P-A-R-K",
-    "sentence": "We like to play on the swings at the **park**.",
+    "sentence": "We like to play on the swings at the park.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 20,
     "word": "BIKE",
     "spelling": "B-I-K-E",
-    "sentence": "I am learning how to ride my new **bike**.",
+    "sentence": "I am learning how to ride my new bike.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 21,
     "word": "NEST",
     "spelling": "N-E-S-T",
-    "sentence": "The bird built a cozy **nest** in the tree.",
+    "sentence": "The bird built a cozy nest in the tree.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 22,
     "word": "RUDE",
     "spelling": "R-U-D-E",
-    "sentence": "It is **rude** to talk when someone else is speaking.",
+    "sentence": "It is rude to talk when someone else is speaking.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 23,
     "word": "DEAL",
     "spelling": "D-E-A-L",
-    "sentence": "We made a **deal** to share our snacks.",
+    "sentence": "We made a deal to share our snacks.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 24,
     "word": "STORE",
     "spelling": "S-T-O-R-E",
-    "sentence": "We need to go to the **store** to buy eggs.",
+    "sentence": "We need to go to the store to buy eggs.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 25,
     "word": "ROADS",
     "spelling": "R-O-A-D-S",
-    "sentence": "Cars drive quickly on the big **roads**.",
+    "sentence": "Cars drive quickly on the big roads.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 26,
     "word": "COOL",
     "spelling": "C-O-O-L",
-    "sentence": "The fresh water feels very **cool** on a hot day.",
+    "sentence": "The fresh water feels very cool on a hot day.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 27,
     "word": "WAKE",
     "spelling": "W-A-K-E",
-    "sentence": "It is time to **wake** up and get ready for school.",
+    "sentence": "It is time to wake up and get ready for school.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 28,
     "word": "VASE",
     "spelling": "V-A-S-E",
-    "sentence": "Put the flowers in the glass **vase** on the table.",
+    "sentence": "Put the flowers in the glass vase on the table.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 29,
     "word": "TUNE",
     "spelling": "T-U-N-E",
-    "sentence": "I can hum a happy **tune** while I play.",
+    "sentence": "I can hum a happy tune while I play.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 30,
     "word": "COAT",
     "spelling": "C-O-A-T",
-    "sentence": "Don't forget to wear your warm **coat** today.",
+    "sentence": "Don't forget to wear your warm coat today.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 31,
     "word": "FOUR",
     "spelling": "F-O-U-R",
-    "sentence": "I have **four** apples in my lunch bag.",
+    "sentence": "I have four apples in my lunch bag.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 32,
     "word": "BLOCK",
     "spelling": "B-L-O-C-K",
-    "sentence": "I built a tall tower with one wooden **block**.",
+    "sentence": "I built a tall tower with one wooden block.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 33,
     "word": "HEAP",
     "spelling": "H-E-A-P",
-    "sentence": "There is a big **heap** of leaves in the yard.",
+    "sentence": "There is a big heap of leaves in the yard.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 34,
     "word": "LADDER",
     "spelling": "L-A-D-D-E-R",
-    "sentence": "Use the **ladder** to reach the top shelf.",
+    "sentence": "Use the ladder to reach the top shelf.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 35,
     "word": "TUG",
     "spelling": "T-U-G",
-    "sentence": "Give the rope a strong **tug** to win the game.",
+    "sentence": "Give the rope a strong tug to win the game.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 36,
     "word": "SPOON",
     "spelling": "S-P-O-O-N",
-    "sentence": "Use your **spoon** to eat your soup.",
+    "sentence": "Use your spoon to eat your soup.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 37,
     "word": "SPARK",
     "spelling": "S-P-A-R-K",
-    "sentence": "I saw a tiny **spark** fly out of the campfire.",
+    "sentence": "I saw a tiny spark fly out of the campfire.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 38,
     "word": "LATER",
     "spelling": "L-A-T-E-R",
-    "sentence": "I will finish my homework **later** today.",
+    "sentence": "I will finish my homework later today.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 39,
     "word": "HAIR",
     "spelling": "H-A-I-R",
-    "sentence": "Brush your **hair** before you go to the party.",
+    "sentence": "Brush your hair before you go to the party.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 40,
     "word": "OPEN",
     "spelling": "O-P-E-N",
-    "sentence": "Please **open** the door for our guests.",
+    "sentence": "Please open the door for our guests.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 41,
     "word": "THIS",
     "spelling": "T-H-I-S",
-    "sentence": "**THIS** is my favorite storybook.",
+    "sentence": "THIS is my favorite storybook.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 42,
     "word": "HIS",
     "spelling": "H-I-S",
-    "sentence": "That blue backpack is **his**.",
+    "sentence": "That blue backpack is his.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 43,
     "word": "MAY",
     "spelling": "M-A-Y",
-    "sentence": "The flowers bloom beautifully in the month of **May**.",
+    "sentence": "The flowers bloom beautifully in the month of May.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 44,
     "word": "GRID",
     "spelling": "G-R-I-D",
-    "sentence": "The math paper has a square **grid** on it.",
+    "sentence": "The math paper has a square grid on it.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 45,
     "word": "WAG",
     "spelling": "W-A-G",
-    "sentence": "The happy dog will **wag** its tail when it sees you.",
+    "sentence": "The happy dog will wag its tail when it sees you.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 46,
     "word": "NEAR",
     "spelling": "N-E-A-R",
-    "sentence": "Our house is very **near** the park.",
+    "sentence": "Our house is very near the park.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 47,
     "word": "ZIP",
     "spelling": "Z-I-P",
-    "sentence": "Don't forget to **zip** up your jacket.",
+    "sentence": "Don't forget to zip up your jacket.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 48,
     "word": "RUG",
     "spelling": "R-U-G",
-    "sentence": "We sat on the soft **rug** to play a game.",
+    "sentence": "We sat on the soft rug to play a game.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 49,
     "word": "DOTS",
     "spelling": "D-O-T-S",
-    "sentence": "The ladybug has tiny black **dots** on its back.",
+    "sentence": "The ladybug has tiny black dots on its back.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 50,
     "word": "PAT",
     "spelling": "P-A-T",
-    "sentence": "Give the nice puppy a gentle **pat** on the head.",
+    "sentence": "Give the nice puppy a gentle pat on the head.",
     "status": "pending",
-    "grade": "1st"
+    "grade": "1st",
+    "stats": {
+      "timesShown": 0,
+      "timesCorrect": 0,
+      "timesWrong": 0,
+      "accuracy": 0,
+      "streak": 0,
+      "lastSeen": null,
+      "firstSeen": null
+    }
   },
   {
     "id": 101,
