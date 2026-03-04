@@ -21,17 +21,34 @@ function WordCardAuto({ word, onResult }) {
   const inputRef = useRef(null);
 
   useEffect(() => {
+    // Cada vez que cambia la palabra:
+    // 1) reset estado
+    // 2) reproducir audio
+    // 3) enfocar input al terminar el TTS
     setSpeaking(true);
     setInput("");
     setStatus(null);
     setRevealed(false);
+
     speak(word.word, word.sentence, word.grade, () => {
       setSpeaking(false);
-      // Auto-focus al input cuando termina el TTS
-      setTimeout(() => inputRef.current?.focus(), 100);
+      // Pequeño delay para asegurar que el input está montado
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
     });
+
     return () => cancelSpeech();
   }, [word.id]);
+
+  // 🔸 FOCUS extra de seguridad al montar por primera vez
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
 
   function handleCheck() {
     if (!input.trim() || status) return;
@@ -40,10 +57,9 @@ function WordCardAuto({ word, onResult }) {
     const isCorrect  = normalized === expected;
 
     setStatus(isCorrect ? "correct" : "wrong");
-    setRevealed(true); // revela spelling en ambos casos
+    setRevealed(true);
 
     if (isCorrect) {
-      // Auto-avanza después de 1.5s si es correcta
       setTimeout(() => onResult(word.id, "mastered"), 1500);
     }
   }
@@ -136,6 +152,7 @@ function WordCardAuto({ word, onResult }) {
         <input
           ref={inputRef}
           type="text"
+          autoFocus                    // 🔸 clave para el primer render
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -143,7 +160,6 @@ function WordCardAuto({ word, onResult }) {
           placeholder="Wispr will type here..."
           className={`w-full text-center text-2xl font-mono font-bold rounded-2xl border-2 py-4 px-4 outline-none transition-all duration-300 tracking-widest ${inputBg}`}
         />
-        {/* Feedback visual */}
         {status === "correct" && (
           <p className="text-center text-green-500 font-bold mt-2 text-lg animate-bounce">
             ✅ Correct! 🎉
@@ -156,9 +172,8 @@ function WordCardAuto({ word, onResult }) {
         )}
       </div>
 
-      {/* Botones */}
+      {/* Botones inferiores (igual que antes) */}
       {!status ? (
-        // Antes de validar: Check + Skip
         <div className="grid grid-cols-2 gap-4">
           <button
             onClick={() => {
@@ -178,7 +193,6 @@ function WordCardAuto({ word, onResult }) {
           </button>
         </div>
       ) : status === "wrong" ? (
-        // Si falló: override manual
         <div className="grid grid-cols-2 gap-4">
           <button
             onClick={() => onResult(word.id, "struggling")}
