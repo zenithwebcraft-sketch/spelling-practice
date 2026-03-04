@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import useSpellingStore from "../store/useSpellingStore";
 
 export default function Home() {
-  const navigate    = useNavigate();
-  const loadWords   = useSpellingStore(s => s.loadWords);
-  const deal        = useSpellingStore(s => s.deal);
-  const getStats    = useSpellingStore(s => s.getStats);
-  const resetAll    = useSpellingStore(s => s.resetAll);
-  const isFirstDeal = useSpellingStore(s => s.isFirstDeal);
+  const navigate      = useNavigate();
+  const loadWords     = useSpellingStore(s => s.loadWords);
+  const deal          = useSpellingStore(s => s.deal);
+  const getStats      = useSpellingStore(s => s.getStats);
+  const resetAll      = useSpellingStore(s => s.resetAll);
+  const isFirstDeal   = useSpellingStore(s => s.isFirstDeal);
+  const activeGrade   = useSpellingStore(s => s.activeGrade);
+  const setActiveGrade= useSpellingStore(s => s.setActiveGrade);
 
   useEffect(() => { loadWords(); }, []);
 
@@ -16,6 +18,8 @@ export default function Home() {
   const progressPct = stats.total > 0
     ? Math.round((stats.mastered / stats.total) * 100)
     : 0;
+
+  const profileLabel = activeGrade === "1st" ? "Estrella · 1st grade" : "Eva · 5th–8th grade";
 
   function handleDeal(path) {
     deal();
@@ -27,11 +31,11 @@ export default function Home() {
       <div className="max-w-sm w-full">
 
         {/* Header */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <div className="text-6xl mb-3">🏆</div>
-          <h1 className="text-4xl font-black text-indigo-800">Eva's Spelling Bee</h1>
-          <p className="text-indigo-300 mt-2 text-sm">
-            {stats.mastered} / {stats.total} words mastered
+          <h1 className="text-4xl font-black text-indigo-800">Spelling Bee Lab</h1>
+          <p className="text-indigo-300 mt-1 text-sm">
+            {profileLabel}
           </p>
           <div className="w-full bg-gray-100 rounded-full h-2 mt-3">
             <div
@@ -39,9 +43,36 @@ export default function Home() {
               style={{ width: `${progressPct}%` }}
             />
           </div>
+          <p className="text-indigo-300 mt-1 text-xs">
+            {stats.mastered} / {stats.total} words mastered
+          </p>
         </div>
 
-        {/* Botón Eva — Manual */}
+        {/* Selector de hija / perfil */}
+        <div className="grid grid-cols-2 gap-2 mb-6">
+          <button
+            onClick={() => setActiveGrade("1st")}
+            className={`py-2 rounded-2xl text-sm font-semibold border ${
+              activeGrade === "1st"
+                ? "bg-pink-500 text-white border-pink-500 shadow-md"
+                : "bg-white text-pink-400 border-pink-200"
+            }`}
+          >
+            🌈 Estrella (1st)
+          </button>
+          <button
+            onClick={() => setActiveGrade("all")}
+            className={`py-2 rounded-2xl text-sm font-semibold border ${
+              activeGrade === "all"
+                ? "bg-indigo-600 text-white border-indigo-600 shadow-md"
+                : "bg-white text-indigo-400 border-indigo-200"
+            }`}
+          >
+            🚀 Eva (5th–8th)
+          </button>
+        </div>
+
+        {/* Botón Practice manual */}
         <button
           onClick={() => handleDeal("/session")}
           disabled={stats.total === 0}
@@ -53,7 +84,7 @@ export default function Home() {
           </p>
         </button>
 
-        {/* Botón Eva — Automático */}
+        {/* Botón Practice Auto */}
         <button
           onClick={() => handleDeal("/session-auto")}
           disabled={stats.total === 0}
@@ -65,7 +96,7 @@ export default function Home() {
           </p>
         </button>
 
-        {/* Botón Papá — Rater */}
+        {/* Botón Rater */}
         <button
           onClick={() => navigate("/rater")}
           className="w-full bg-white hover:bg-gray-50 active:scale-95 text-indigo-600 font-bold py-5 rounded-3xl text-xl shadow-sm border border-indigo-100 transition-all duration-150"
