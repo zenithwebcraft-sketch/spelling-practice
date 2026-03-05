@@ -14,16 +14,25 @@ function parseSentence(sentence, word) {
   const regex = new RegExp(`(${word})`, "i");
   return sentence.split(regex);
 }
-function WordCardAuto({ word, onResult }) {
-  const [speaking, setSpeaking] = useState(false);
-  const [transcript, setTranscript] = useState("");
-  const [status, setStatus] = useState(null); // null | "correct" | "wrong"
-  const [revealed, setRevealed] = useState(false);
-  const recognitionRef = useRef(null);
+function normalizeLettersString(text) {
+  // "F I R S T" → "FIRST"
+  return text
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "")   // solo letras
+    .trim();
+}
 
+function WordCardAuto({ word, onResult }) {
+  const [speaking, setSpeaking]   = useState(false);
+  const [displayLetters, setDisplayLetters] = useState(""); // F-I-R-S-T
+  const [status, setStatus]       = useState(null);         // null | "correct" | "wrong"
+  const [revealed, setRevealed]   = useState(false);
+  const recognitionRef            = useRef(null);
+
+  // TTS al cargar palabra
   useEffect(() => {
     setSpeaking(true);
-    setTranscript("");
+    setDisplayLetters("");
     setStatus(null);
     setRevealed(false);
 
@@ -33,57 +42,23 @@ function WordCardAuto({ word, onResult }) {
 
     return () => {
       if (recognitionRef.current) {
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onend = null;
         recognitionRef.current.stop();
       }
     };
   }, [word.id]);
 
-  function startListening() {
-    const SpeechRecognition = 
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      alert("Speech Recognition no soportado en este navegador 😞");
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.continuous = true;        // sigue escuchando
-    recognition.interimResults = true;     // resultados parciales
-
-    recognition.onstart = () => {
-      setTranscript("🎙 Listening...");
-    };
-
-    recognition.onresult = (event) => {
-      // event.results tiene todas las frases reconocidas
-      const last = event.results[event.results.length - 1];
-      const final = last.isFinal ? last[0].transcript : event.results[0][0].transcript;
-
-      // Dividir en letras (por espacios)
-      const letters = final.toUpperCase().split(/\s+/).filter(l => l.length === 1);
-      setTranscript(letters.join("-")); // Visual: F-I-R-S-T
-    };
-
-    recognition.onend = () => {
-      setTranscript("🎙 Stopped listening");
-      // Auto-validar si hay algo escrito
-      if (transcript) handleCheck();
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
-  }
-
-  function handleCheck() {
-    if (!transcript || status) return;
-
-    // Normalizar: quitar todo menos letras → FIRST
-    const normalized = transcript.replace(/[^A-Z]/g, "").toUpperCase();
-    const expected = word.word.toUpperCase();
+  function handleResultFromSpeech(rawTranscript) {
+    // rawTranscript = lo que escuchó el navegador, ej: "F I R S T"
+    const normalized = normalizeLettersString(rawTranscript); // "FIRST"
+    const expected   = word.word.toUpperCase();
 
     const isCorrect = normalized === expected;
+
+    // Visual: F-I-R-S-T
+    const letters = normalized.split("");
+    setDisplayLetters(letters.join("-"));
 
     setStatus(isCorrect ? "correct" : "wrong");
     setRevealed(true);
@@ -93,19 +68,50 @@ function WordCardAuto({ word, onResult }) {
     }
   }
 
-  // resto igual: sentence, spelling, botones Reveal/Override...
-  const sentenceParts = parseSentence(word.sentence, word.word);
-  const wordFound = sentenceParts.length === 3;
+  function startListening() {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  const inputBg = status === "correct" 
-    ? "bg-green-50 border-green-400 text-green-700" 
-    : status === "wrong" 
-    ? "bg-red-50 border-red-400 text-red-500" 
-    : "bg-white border-gray-200 text-gray-800";
+    if (!SpeechRecognition) {
+      alert("Speech Recognition no soportado en este navegador 😞");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = false;      // escuchamos una “frase”, no infinito
+    recognition.interimResults = false;  // solo resultado final
+
+    recognition.onresult = (event) => {
+      const finalTranscript = event.results[0][0].transcript;
+      handleResultFromSpeech(finalTranscript);
+    };
+
+    recognition.onend = () => {
+      recognitionRef.current = null;
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setDisplayLetters("🎙 Listening...");
+    setStatus(null);
+    setRevealed(false);
+  }
+
+  const sentenceParts = parseSentence(word.sentence, word.word);
+  const wordFoundInSentence = sentenceParts.length === 3;
+
+  const inputBg =
+    status === "correct"
+      ? "bg-green-50 border-green-400 text-green-700"
+      : status === "wrong"
+      ? "bg-red-50 border-red-400 text-red-500"
+      : "bg-white border-gray-200 text-gray-800";
 
   return (
     <div className="bg-white rounded-3xl shadow-lg p-8 flex flex-col gap-7">
-      {/* Header grade + ID igual que antes */}
+
+      {/* Grado + ID */}
       <div className="flex items-center justify-between">
         <span className="text-sm font-bold uppercase tracking-widest text-indigo-300">
           {word.grade} Grade
@@ -115,7 +121,7 @@ function WordCardAuto({ word, onResult }) {
         </span>
       </div>
 
-      {/* Botón repetir igual */}
+      {/* Botón repetir */}
       <button
         onClick={() => {
           setSpeaking(true);
@@ -123,24 +129,49 @@ function WordCardAuto({ word, onResult }) {
         }}
         className="flex items-center justify-center gap-2 text-indigo-500 hover:text-indigo-700 transition-colors text-base font-semibold"
       >
-        {speaking ? <span className="animate-pulse">🔊 Playing...</span> : <span>🔁 Repeat</span>}
+        {speaking
+          ? <span className="animate-pulse">🔊 Playing...</span>
+          : <span>🔁 Repeat word</span>
+        }
       </button>
 
-      {/* Oración */}
+      {/* Oración con palabra enmascarada */}
       <div className="bg-gray-50 rounded-2xl px-5 py-5">
-        <span className="text-xs text-gray-300 uppercase tracking-widest block mb-3">Sentence</span>
+        <span className="text-xs text-gray-300 uppercase tracking-widest block mb-3">
+          Sentence
+        </span>
         <p className="text-center text-gray-600 italic text-lg leading-relaxed">
-          "{word.sentence}"
+          "
+          {wordFoundInSentence ? (
+            <>
+              {sentenceParts[0]}
+              {revealed ? (
+                <span className="font-bold text-indigo-600 not-italic">
+                  {sentenceParts[1]}
+                </span>
+              ) : (
+                <span className="inline-block bg-gray-300 text-gray-300 rounded px-1 select-none">
+                  {"_".repeat(sentenceParts[1].length)}
+                </span>
+              )}
+              {sentenceParts[2]}
+            </>
+          ) : (
+            word.sentence
+          )}
+          "
         </p>
       </div>
 
-      {/* Campo de transcripción */}
+      {/* Campo de letras escuchadas */}
       <div>
         <span className="text-xs text-gray-300 uppercase tracking-widest block mb-2">
           Say the letters one by one →
         </span>
-        <div className={`w-full text-center text-2xl font-mono font-bold rounded-2xl border-2 py-4 px-4 ${inputBg}`}>
-          {transcript || "🎙 Click to start listening"}
+        <div
+          className={`w-full text-center text-2xl font-mono font-bold rounded-2xl border-2 py-4 px-4 ${inputBg}`}
+        >
+          {displayLetters || "🎙 Click the button to start"}
         </div>
         {status === "correct" && (
           <p className="text-center text-green-500 font-bold mt-2 text-lg animate-bounce">
@@ -149,12 +180,12 @@ function WordCardAuto({ word, onResult }) {
         )}
         {status === "wrong" && (
           <p className="text-center text-red-400 font-bold mt-2 text-lg">
-            ❌ Try again or check spelling
+            ❌ Not quite — check the spelling below
           </p>
         )}
       </div>
 
-      {/* Botón de escucha */}
+      {/* Botón de escucha / override */}
       {!status ? (
         <button
           onClick={startListening}
@@ -193,6 +224,7 @@ function WordCardAuto({ word, onResult }) {
     </div>
   );
 }
+
 
 // ─── Página SessionAuto ──────────────────────────────────────────────
 export default function SessionAuto() {
