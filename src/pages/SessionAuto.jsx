@@ -15,75 +15,97 @@ function parseSentence(sentence, word) {
   return sentence.split(regex);
 }
 function WordCardAuto({ word, onResult }) {
-  const [speaking, setSpeaking]   = useState(false);
-  const [input, setInput]         = useState("");
-  const [status, setStatus]       = useState(null); // null | "correct" | "wrong"
-  const [revealed, setRevealed]   = useState(false);
-  const inputRef = useRef(null);
+  const [speaking, setSpeaking] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [status, setStatus] = useState(null); // null | "correct" | "wrong"
+  const [revealed, setRevealed] = useState(false);
+  const recognitionRef = useRef(null);
 
   useEffect(() => {
-    // Cada vez que cambia la palabra:
-    // 1) reset estado
-    // 2) reproducir audio
-    // 3) enfocar input al terminar el TTS
     setSpeaking(true);
-    setInput("");
+    setTranscript("");
     setStatus(null);
     setRevealed(false);
 
     speak(word.word, word.sentence, word.grade, () => {
       setSpeaking(false);
-      // Pequeño delay para asegurar que el input está montado
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
-      }, 100);
     });
 
-    return () => cancelSpeech();
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
   }, [word.id]);
 
-  // 🔸 FOCUS extra de seguridad al montar por primera vez
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, []);
+  function startListening() {
+    const SpeechRecognition = 
+      window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    function handleCheck() {
-    if (!input.trim() || status) return;
-
-    const normalizedInput = normalizeSpelling(input);        // lo que Wispr escribió
-    const expected        = normalizeSpelling(word.word);    // campo word del JSON
-
-    const isCorrect  = normalizedInput === expected;
-
-    setStatus(isCorrect ? "correct" : "wrong");
-    setRevealed(true); // muestra spelling siempre
-
-    if (isCorrect) {
-        setTimeout(() => onResult(word.id, "mastered"), 1500);
-    }
+    if (!SpeechRecognition) {
+      alert("Speech Recognition no soportado en este navegador 😞");
+      return;
     }
 
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = true;        // sigue escuchando
+    recognition.interimResults = true;     // resultados parciales
 
-  function handleKeyDown(e) {
-    if (e.key === "Enter") handleCheck();
+    recognition.onstart = () => {
+      setTranscript("🎙 Listening...");
+    };
+
+    recognition.onresult = (event) => {
+      // event.results tiene todas las frases reconocidas
+      const last = event.results[event.results.length - 1];
+      const final = last.isFinal ? last[0].transcript : event.results[0][0].transcript;
+
+      // Dividir en letras (por espacios)
+      const letters = final.toUpperCase().split(/\s+/).filter(l => l.length === 1);
+      setTranscript(letters.join("-")); // Visual: F-I-R-S-T
+    };
+
+    recognition.onend = () => {
+      setTranscript("🎙 Stopped listening");
+      // Auto-validar si hay algo escrito
+      if (transcript) handleCheck();
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
   }
 
-  const sentenceParts = parseSentence(word.sentence, word.word);
-  const wordFound     = sentenceParts.length === 3;
+  function handleCheck() {
+    if (!transcript || status) return;
 
-  const inputBg =
-    status === "correct" ? "bg-green-50 border-green-400 text-green-700" :
-    status === "wrong"   ? "bg-red-50 border-red-400 text-red-500"       :
-    "bg-white border-gray-200 text-gray-800";
+    // Normalizar: quitar todo menos letras → FIRST
+    const normalized = transcript.replace(/[^A-Z]/g, "").toUpperCase();
+    const expected = word.word.toUpperCase();
+
+    const isCorrect = normalized === expected;
+
+    setStatus(isCorrect ? "correct" : "wrong");
+    setRevealed(true);
+
+    if (isCorrect) {
+      setTimeout(() => onResult(word.id, "mastered"), 1500);
+    }
+  }
+
+  // resto igual: sentence, spelling, botones Reveal/Override...
+  const sentenceParts = parseSentence(word.sentence, word.word);
+  const wordFound = sentenceParts.length === 3;
+
+  const inputBg = status === "correct" 
+    ? "bg-green-50 border-green-400 text-green-700" 
+    : status === "wrong" 
+    ? "bg-red-50 border-red-400 text-red-500" 
+    : "bg-white border-gray-200 text-gray-800";
 
   return (
     <div className="bg-white rounded-3xl shadow-lg p-8 flex flex-col gap-7">
-
-      {/* Grado + ID */}
+      {/* Header grade + ID igual que antes */}
       <div className="flex items-center justify-between">
         <span className="text-sm font-bold uppercase tracking-widest text-indigo-300">
           {word.grade} Grade
@@ -93,109 +115,53 @@ function WordCardAuto({ word, onResult }) {
         </span>
       </div>
 
-      {/* Botón repetir */}
+      {/* Botón repetir igual */}
       <button
         onClick={() => {
           setSpeaking(true);
-          speak(word.word, word.sentence, word.grade, () => {
-            setSpeaking(false);
-            setTimeout(() => inputRef.current?.focus(), 100);
-          });
+          speak(word.word, word.sentence, word.grade, () => setSpeaking(false));
         }}
         className="flex items-center justify-center gap-2 text-indigo-500 hover:text-indigo-700 transition-colors text-base font-semibold"
       >
-        {speaking
-          ? <span className="animate-pulse">🔊 Playing...</span>
-          : <span>🔁 Repeat word</span>
-        }
+        {speaking ? <span className="animate-pulse">🔊 Playing...</span> : <span>🔁 Repeat</span>}
       </button>
 
-      {/* Oración enmascarada */}
+      {/* Oración */}
       <div className="bg-gray-50 rounded-2xl px-5 py-5">
-        <span className="text-xs text-gray-300 uppercase tracking-widest block mb-3">
-          Sentence
-        </span>
+        <span className="text-xs text-gray-300 uppercase tracking-widest block mb-3">Sentence</span>
         <p className="text-center text-gray-600 italic text-lg leading-relaxed">
-          "
-          {wordFound ? (
-            <>
-              {sentenceParts[0]}
-              {revealed ? (
-                <span className="font-bold text-indigo-600 not-italic">
-                  {sentenceParts[1]}
-                </span>
-              ) : (
-                <span className="inline-block bg-gray-300 text-gray-300 rounded px-1 select-none">
-                  {"_".repeat(sentenceParts[1].length)}
-                </span>
-              )}
-              {sentenceParts[2]}
-            </>
-          ) : word.sentence}
-          "
+          "{word.sentence}"
         </p>
       </div>
 
-      {/* Spelling revelado */}
-      {revealed && (
-        <div className="bg-indigo-50 rounded-2xl px-5 py-4 text-center">
-          <span className="text-xs text-indigo-300 uppercase tracking-widest block mb-2">
-            Spelling
-          </span>
-          <span className="font-mono font-bold text-indigo-600 tracking-widest text-2xl">
-            {word.spelling}
-          </span>
-        </div>
-      )}
-
-      {/* Input de Wispr */}
+      {/* Campo de transcripción */}
       <div>
         <span className="text-xs text-gray-300 uppercase tracking-widest block mb-2">
-          Spell it out loud →
+          Say the letters one by one →
         </span>
-        <input
-          ref={inputRef}
-          type="text"
-          autoFocus                    // 🔸 clave para el primer render
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={!!status}
-          placeholder="Wispr will type here..."
-          className={`w-full text-center text-2xl font-mono font-bold rounded-2xl border-2 py-4 px-4 outline-none transition-all duration-300 tracking-widest ${inputBg}`}
-        />
+        <div className={`w-full text-center text-2xl font-mono font-bold rounded-2xl border-2 py-4 px-4 ${inputBg}`}>
+          {transcript || "🎙 Click to start listening"}
+        </div>
         {status === "correct" && (
           <p className="text-center text-green-500 font-bold mt-2 text-lg animate-bounce">
-            ✅ Correct! 🎉
+            ✅ Perfect! 🎉
           </p>
         )}
         {status === "wrong" && (
           <p className="text-center text-red-400 font-bold mt-2 text-lg">
-            ❌ Not quite — check the spelling above
+            ❌ Try again or check spelling
           </p>
         )}
       </div>
 
-      {/* Botones inferiores (igual que antes) */}
+      {/* Botón de escucha */}
       {!status ? (
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={() => {
-              setRevealed(true);
-              setStatus("wrong");
-            }}
-            className="py-5 rounded-2xl bg-gray-50 hover:bg-gray-100 active:scale-95 text-gray-400 font-black text-lg transition-all"
-          >
-            👁 Reveal
-          </button>
-          <button
-            onClick={handleCheck}
-            disabled={!input.trim()}
-            className="py-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black text-lg transition-all disabled:opacity-40"
-          >
-            ✔ Check
-          </button>
-        </div>
+        <button
+          onClick={startListening}
+          className="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black py-5 rounded-2xl text-lg transition-all"
+        >
+          🎙 Start Listening
+        </button>
       ) : status === "wrong" ? (
         <div className="grid grid-cols-2 gap-4">
           <button
@@ -213,6 +179,17 @@ function WordCardAuto({ word, onResult }) {
         </div>
       ) : null}
 
+      {/* Spelling revelado */}
+      {revealed && (
+        <div className="bg-indigo-50 rounded-2xl px-5 py-4 text-center">
+          <span className="text-xs text-indigo-300 uppercase tracking-widest block mb-2">
+            Spelling
+          </span>
+          <span className="font-mono font-bold text-indigo-600 tracking-widest text-2xl">
+            {word.spelling}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
