@@ -1,42 +1,94 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../lib/firebase";
+import { logoutUser } from "../services/authService";
 import useSpellingStore from "../store/useSpellingStore";
 
 export default function Home() {
-  const navigate      = useNavigate();
-  const loadWords     = useSpellingStore(s => s.loadWords);
-  const deal          = useSpellingStore(s => s.deal);
-  const getStats      = useSpellingStore(s => s.getStats);
-  const resetAll      = useSpellingStore(s => s.resetAll);
-  const isFirstDeal   = useSpellingStore(s => s.isFirstDeal);
-  const activeGrade   = useSpellingStore(s => s.activeGrade);
-  const setActiveGrade= useSpellingStore(s => s.setActiveGrade);
+  const navigate       = useNavigate();
+  const loadWords      = useSpellingStore(s => s.loadWords);
+  const deal           = useSpellingStore(s => s.deal);
+  const getStats       = useSpellingStore(s => s.getStats);
+  const resetAll       = useSpellingStore(s => s.resetAll);
+  const isFirstDeal    = useSpellingStore(s => s.isFirstDeal);
+  const setActiveGrade = useSpellingStore(s => s.setActiveGrade);
 
-  useEffect(() => { loadWords(); }, []);
+  const [userData, setUserData] = useState(null); // { name, grade, accessCode }
+  const [loading, setLoading]   = useState(true);
 
-  const stats = getStats();
-  const progressPct = stats.total > 0
-    ? Math.round((stats.mastered / stats.total) * 100)
-    : 0;
+  useEffect(() => {
+    async function init() {
+      const user = auth.currentUser;
+      if (!user) { navigate("/login"); return; }
 
-  const profileLabel = activeGrade === "1st" ? "Estrella · 1st grade" : "Eva · 5th–8th grade";
+      // Cargar datos del perfil
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (snap.exists()) {
+        const data = snap.data();
+        setUserData(data);
+        // Aplicar grade del perfil al store
+        setActiveGrade(data.grade);
+        // Cargar palabras + progreso Firebase
+        await loadWords(user.uid);
+      }
+      setLoading(false);
+    }
+    init();
+  }, []);
+
+  async function handleLogout() {
+    await logoutUser();
+    navigate("/login");
+  }
 
   function handleDeal(path) {
     deal();
     navigate(path);
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50">
+        <p className="text-indigo-400 text-lg animate-pulse">Loading your words... 🐝</p>
+      </div>
+    );
+  }
+
+  const stats      = getStats();
+  const progressPct = stats.total > 0
+    ? Math.round((stats.mastered / stats.total) * 100)
+    : 0;
+
+  const gradeLabel = userData?.grade === "1st" ? "1st Grade" : "5th–8th Grade";
+  const gradeEmoji = userData?.grade === "1st" ? "🌈" : "🚀";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center p-6">
       <div className="max-w-sm w-full">
 
-        {/* Header */}
+        {/* Header: nombre + grado + logout */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <p className="text-xs text-indigo-300 uppercase tracking-widest">
+              {gradeEmoji} {gradeLabel}
+            </p>
+            <h2 className="text-xl font-black text-indigo-800">
+              Hi, {userData?.name}! 👋
+            </h2>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="text-xs text-gray-400 hover:text-red-400 transition-colors"
+          >
+            Sign out
+          </button>
+        </div>
+
+        {/* Barra de progreso */}
         <div className="text-center mb-8">
           <div className="text-6xl mb-3">🏆</div>
-          <h1 className="text-4xl font-black text-indigo-800">Spelling Bee Lab</h1>
-          <p className="text-indigo-300 mt-1 text-sm">
-            {profileLabel}
-          </p>
+          <h1 className="text-4xl font-black text-indigo-800">Spelling Practice</h1>
           <div className="w-full bg-gray-100 rounded-full h-2 mt-3">
             <div
               className="bg-indigo-500 h-2 rounded-full transition-all duration-500"
@@ -48,31 +100,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Selector de hija / perfil */}
-        <div className="grid grid-cols-2 gap-2 mb-6">
-            <button
-            onClick={() => setActiveGrade("1st")}
-            className={`py-2 rounded-2xl text-sm font-semibold border ${
-                activeGrade === "1st"
-                ? "bg-pink-500 text-white border-pink-500 shadow-md"
-                : "bg-white text-pink-400 border-pink-200"
-            }`}
-            >
-            🌈 Estrella (1st)
-            </button>
-            <button
-            onClick={() => setActiveGrade("all")}
-            className={`py-2 rounded-2xl text-sm font-semibold border ${
-                activeGrade === "all"
-                ? "bg-indigo-600 text-white border-indigo-600 shadow-md"
-                : "bg-white text-indigo-400 border-indigo-200"
-            }`}
-            >
-            🚀 Eva (5th–8th)
-            </button>
-        </div>
-
-        {/* Botón Practice manual */}
+        {/* Botones principales */}
         <button
           onClick={() => handleDeal("/session")}
           disabled={stats.total === 0}
@@ -84,30 +112,25 @@ export default function Home() {
           </p>
         </button>
 
-        {/* Botón Practice Auto */}
         <button
           onClick={() => handleDeal("/session-auto")}
           disabled={stats.total === 0}
           className="w-full bg-violet-600 hover:bg-violet-700 active:scale-95 text-white font-black py-6 rounded-3xl text-xl shadow-lg transition-all duration-150 disabled:opacity-40 mb-4"
         >
-          🤖 Practice (Auto)
+          🎙 Practice (Auto)
           <p className="text-sm font-normal opacity-70 mt-1">
-            Spell out loud — Wispr validates
+            Hold button to spell out loud
           </p>
         </button>
 
-        {/* Botón Rater */}
         <button
           onClick={() => navigate("/rater")}
           className="w-full bg-white hover:bg-gray-50 active:scale-95 text-indigo-600 font-bold py-5 rounded-3xl text-xl shadow-sm border border-indigo-100 transition-all duration-150"
         >
           🔍 Rater
-          <p className="text-sm font-normal text-indigo-300 mt-1">
-            Look up any word by ID
-          </p>
         </button>
 
-        {/* Stats + Reset */}
+        {/* Stats */}
         <div className="flex justify-between items-center mt-6 px-2 text-sm text-gray-400">
           <span>✅ {stats.mastered} · 🔁 {stats.struggling} · 📋 {stats.pending}</span>
           {stats.sessions > 0 && (
@@ -118,6 +141,29 @@ export default function Home() {
               Reset
             </button>
           )}
+        </div>
+
+        {/* Branding */}
+        <div className="mt-8 text-center text-xs text-gray-400 space-y-2">
+          <p>
+            Built with ❤️ by{" "}
+            <a
+              href="https://zenithwebcraft.com"
+              target="_blank"
+              rel="noreferrer"
+              className="text-indigo-400 hover:text-indigo-600 font-semibold"
+            >
+              zenithwebcraft.com
+            </a>
+          </p>
+          <a
+            href="https://buymeacoffee.com/zenithwebcraft"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-300 hover:bg-yellow-400 text-xs font-bold text-gray-800 shadow-sm transition-all"
+          >
+            ☕ Buy me a coffee
+          </a>
         </div>
 
       </div>

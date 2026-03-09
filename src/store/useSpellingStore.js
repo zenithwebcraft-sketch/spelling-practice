@@ -1,96 +1,124 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { dealWords } from "../utils/dealEngine";
+import { saveWordProgress, loadUserProgress } from "../services/progressService";
 
 const useSpellingStore = create(
   persist(
     (set, get) => ({
-      // --- Estado base ---
-      words: [],
-      currentDeal: [],
-      currentIndex: 0,
+      words:         [],
+      currentDeal:   [],
+      currentIndex:  0,
       sessionNumber: 0,
-      sessionHistory: [],
+      sessionHistory:[],
+      isFirstDeal:   true,
+      initialized:   false,
+      activeGrade:   "all",
+      uid:           null,      // 🔸 uid del usuario Firebase
 
-      isFirstDeal: true,
-      initialized: false,
+      // ── Setters básicos ─────────────────────────────────────
+      setUid: (uid) => set({ uid }),
 
-      // 🔸 nuevo: perfil activo (grade scope)
-      // "all" → Eva (5th–8th), "1st" → Estrella
-      activeGrade: "all",
+      setActiveGrade: (gradeKey) => set({
+        activeGrade: gradeKey,
+        currentDeal: [],
+        currentIndex: 0,
+        isFirstDeal: true,
+      }),
 
-      // --- Cargar palabras ---
-      loadWords: async () => {
-        if (get().initialized) return;
-        const res = await fetch("/words_clean.json");
+      // ── Cargar palabras + progreso Firebase ─────────────────
+      loadWords: async (uid) => {
+        // Siempre recargar si viene un uid nuevo
+        const prevUid = get().uid;
+        if (get().initialized && prevUid === uid) return;
+
+        // 1. Cargar JSON de palabras
+        const res  = await fetch("/words_clean.json");
         const data = await res.json();
-        set({ words: data, initialized: true });
-      },
 
-      // 🔸 cambiar perfil activo
-        setActiveGrade: (gradeKey) => {
-        set({
-            activeGrade: gradeKey,   // "1st" o "all"
-            currentDeal: [],
-            currentIndex: 0,
-            isFirstDeal: true,
-        });
-        },
-
-      // helper que devuelve el subset según perfil
-        getActiveWords: () => {
-        const { words, activeGrade } = get();
-
-        if (activeGrade === "1st") {
-            // 🌈 Estrella
-            return words.filter(w => (w.grade || "").toLowerCase() === "1st");
+        // 2. Cargar progreso de Firebase si hay usuario
+        let progress = {};
+        if (uid) {
+          try {
+            progress = await loadUserProgress(uid);
+          } catch (e) {
+            console.warn("Could not load progress:", e);
+          }
         }
 
-        // 🚀 Eva (todo lo que NO sea 1st)
-        return words.filter(w => (w.grade || "").toLowerCase() !== "1st");
-        },
+        // 3. Mezclar palabras + progreso guardado
+        const words = data.map(w => {
+          const saved = progress[w.id];
+          if (saved) {
+            return { ...w, status: saved.status, stats: saved.stats };
+          }
+          return w;
+        });
 
-      // --- Repartir 10 palabras ---
+        set({ words, initialized: true, uid: uid || null });
+      },
+
+      // ── Helpers ─────────────────────────────────────────────
+      getActiveWords: () => {
+        const { words, activeGrade } = get();
+        if (activeGrade === "1st") {
+          return words.filter(w => (w.grade || "").toLowerCase() === "1st");
+        }
+        return words.filter(w => (w.grade || "").toLowerCase() !== "1st");
+      },
+
+      // ── Deal ────────────────────────────────────────────────
       deal: () => {
         const { isFirstDeal, sessionNumber, getActiveWords } = get();
-        const activeWords = getActiveWords();
-        const hand = dealWords(activeWords, isFirstDeal);
-
+        const hand = dealWords(getActiveWords(), isFirstDeal);
         set({
-          currentDeal: hand,
-          currentIndex: 0,
-          isFirstDeal: false,
+          currentDeal:   hand,
+          currentIndex:  0,
+          isFirstDeal:   false,
           sessionNumber: sessionNumber + 1,
         });
       },
 
-      // --- Marcar palabra ---
-      markWord: (wordId, result) => {
+      // ── Marcar palabra + guardar en Firebase ─────────────────
+      markWord: async (wordId, result) => {
         const now = new Date().toISOString();
-        const { words, currentDeal, currentIndex, sessionNumber, sessionHistory } = get();
+        const {
+          words, currentIndex, sessionNumber,
+          sessionHistory, uid,
+        } = get();
 
         const updatedWords = words.map(w => {
           if (w.id !== wordId) return w;
+
           const stats = { ...w.stats };
-          stats.timesShown += 1;
-          stats.lastSeen = now;
+          stats.timesShown  += 1;
+          stats.lastSeen     = now;
           if (!stats.firstSeen) stats.firstSeen = now;
 
           if (result === "mastered") {
             stats.timesCorrect += 1;
-            stats.streak += 1;
+            stats.streak       += 1;
           } else {
             stats.timesWrong += 1;
-            stats.streak = 0;
+            stats.streak      = 0;
           }
 
           stats.accuracy = Math.round((stats.timesCorrect / stats.timesShown) * 100);
+
+          // 🔸 Guardar en Firebase si hay usuario
+          if (uid) {
+            saveWordProgress(uid, wordId, result, stats).catch(e =>
+              console.warn("Could not save progress:", e)
+            );
+          }
 
           return { ...w, status: result, stats };
         });
 
         const updatedHistory = [...sessionHistory];
-        const sessionIdx = updatedHistory.findIndex(s => s.sessionNumber === sessionNumber);
+        const sessionIdx = updatedHistory.findIndex(
+          s => s.sessionNumber === sessionNumber
+        );
         const entry = { wordId, result, timestamp: now };
 
         if (sessionIdx === -1) {
@@ -100,52 +128,50 @@ const useSpellingStore = create(
         }
 
         set({
-          words: updatedWords,
-          currentIndex: currentIndex + 1,
+          words:          updatedWords,
+          currentIndex:   currentIndex + 1,
           sessionHistory: updatedHistory,
         });
       },
 
-      // --- Reset completo (solo stats/estado, no borra palabras) ---
+      // ── Stats filtrados ──────────────────────────────────────
+      getStats: () => {
+        const { getActiveWords, sessionHistory } = get();
+        const active = getActiveWords();
+        return {
+          total:     active.length,
+          pending:   active.filter(w => w.status === "pending").length,
+          mastered:  active.filter(w => w.status === "mastered").length,
+          struggling:active.filter(w => w.status === "struggling").length,
+          sessions:  sessionHistory.length,
+        };
+      },
+
+      // ── Reset completo ───────────────────────────────────────
       resetAll: () => {
         set(state => ({
           words: state.words.map(w => ({
             ...w,
             status: "pending",
             stats: {
-              timesShown: 0,
-              timesCorrect: 0,
-              timesWrong: 0,
-              accuracy: 0,
-              streak: 0,
-              lastSeen: null,
-              firstSeen: null,
+              timesShown:  0,
+              timesCorrect:0,
+              timesWrong:  0,
+              accuracy:    0,
+              streak:      0,
+              lastSeen:    null,
+              firstSeen:   null,
             },
           })),
-          currentDeal: [],
-          currentIndex: 0,
-          sessionNumber: 0,
+          currentDeal:    [],
+          currentIndex:   0,
+          sessionNumber:  0,
           sessionHistory: [],
-          isFirstDeal: true,
+          isFirstDeal:    true,
         }));
       },
-
-      // --- Stats por perfil activo ---
-        getStats: () => {
-        const { getActiveWords, sessionHistory } = get();
-        const active = getActiveWords();
-        return {
-            total: active.length,
-            pending: active.filter(w => w.status === "pending").length,
-            mastered: active.filter(w => w.status === "mastered").length,
-            struggling: active.filter(w => w.status === "struggling").length,
-            sessions: sessionHistory.length,
-        };
-        },
     }),
-    {
-      name: "eva-spelling-store",
-    }
+    { name: "spelling-store" }
   )
 );
 
