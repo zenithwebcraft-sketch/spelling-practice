@@ -59,11 +59,12 @@ function normalizeLettersString(text) {
 }
 
 function WordCardAuto({ word, onResult }) {
-  const [speaking, setSpeaking]   = useState(false);
-  const [displayLetters, setDisplayLetters] = useState(""); // F-I-R-S-T
-  const [status, setStatus]       = useState(null);         // null | "correct" | "wrong"
-  const [revealed, setRevealed]   = useState(false);
-  const recognitionRef            = useRef(null);
+  const [speaking, setSpeaking]         = useState(false);
+  const [displayLetters, setDisplayLetters] = useState("");
+  const [status, setStatus]             = useState(null);
+  const [revealed, setRevealed]         = useState(false);
+  const recognitionRef                  = useRef(null);
+  const [isListening, setIsListening]   = useState(false);
 
   // TTS al cargar palabra
   useEffect(() => {
@@ -71,6 +72,7 @@ function WordCardAuto({ word, onResult }) {
     setDisplayLetters("");
     setStatus(null);
     setRevealed(false);
+    setIsListening(false);
 
     speak(word.word, word.sentence, word.grade, () => {
       setSpeaking(false);
@@ -90,38 +92,33 @@ function WordCardAuto({ word, onResult }) {
     const expected   = word.word.toUpperCase();
     const isCorrect  = normalized === expected;
 
-    // Visual: F-I-R-S-T
     const letters = normalized.split("");
     setDisplayLetters(letters.join("-"));
 
     setStatus(isCorrect ? "correct" : "wrong");
     setRevealed(true);
 
-    // 🎵 Sonido inmediato
     if (isCorrect) {
-        playSuccess();
-        // 3 segundos de celebración + avanza
-        setTimeout(() => onResult(word.id, "mastered"), 3000);
+      playSuccess();
+      setTimeout(() => onResult(word.id, "mastered"), 3000);
     } else {
-        playError();
-        // Error: sin auto-avance, papá decide
+      playError();
     }
-    }
+  }
 
-
-  function startListening() {
+  function initRecognition() {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       alert("Speech Recognition no soportado en este navegador 😞");
-      return;
+      return null;
     }
 
     const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
-    recognition.continuous = false;      // escuchamos una “frase”, no infinito
-    recognition.interimResults = false;  // solo resultado final
+    recognition.continuous = false;
+    recognition.interimResults = false;
 
     recognition.onresult = (event) => {
       const finalTranscript = event.results[0][0].transcript;
@@ -129,14 +126,39 @@ function WordCardAuto({ word, onResult }) {
     };
 
     recognition.onend = () => {
+      setIsListening(false);
       recognitionRef.current = null;
     };
 
     recognitionRef.current = recognition;
-    recognition.start();
-    setDisplayLetters("🎙 Listening...");
-    setStatus(null);
-    setRevealed(false);
+    return recognition;
+  }
+
+  function handlePressStart() {
+    if (status) return; // ya validado, no seguir escuchando
+
+    let recognition = recognitionRef.current || initRecognition();
+    if (!recognition) return;
+
+    try {
+      recognition.start();
+      setIsListening(true);
+      setDisplayLetters("🎙 Listening...");
+      setStatus(null);
+      setRevealed(false);
+    } catch (e) {
+      // Chrome lanza error si se llama start() mientras ya está en marcha
+      console.warn("Recognition start error:", e);
+    }
+  }
+
+  function handlePressEnd() {
+    if (!recognitionRef.current) return;
+    try {
+      recognitionRef.current.stop(); // dispara onresult/onend con lo que tenga hasta ahora
+    } catch (e) {
+      console.warn("Recognition stop error:", e);
+    }
   }
 
   const sentenceParts = parseSentence(word.sentence, word.word);
@@ -246,13 +268,19 @@ function WordCardAuto({ word, onResult }) {
 `}</style>
 
 
-      {/* Botón de escucha / override */}
+      {/* Botón de escucha: push-to-talk */}
       {!status ? (
         <button
-          onClick={startListening}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black py-5 rounded-2xl text-lg transition-all"
+          onMouseDown={handlePressStart}
+          onMouseUp={handlePressEnd}
+          onMouseLeave={handlePressEnd}
+          onTouchStart={handlePressStart}
+          onTouchEnd={handlePressEnd}
+          className={`w-full ${
+            isListening ? "bg-red-600" : "bg-indigo-600"
+          } hover:bg-indigo-700 active:scale-95 text-white font-black py-5 rounded-2xl text-lg transition-all`}
         >
-          🎙 Start Listening
+          {isListening ? "🎙 Release to stop" : "🎙 Hold to spell"}
         </button>
       ) : status === "wrong" ? (
         <div className="grid grid-cols-2 gap-4">
