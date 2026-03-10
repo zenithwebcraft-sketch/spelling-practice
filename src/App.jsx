@@ -13,7 +13,7 @@ function ProtectedRoute({ user, children }) {
   if (user === undefined) return (
     // Cargando: esperando a Firebase Auth
     <div className="min-h-screen flex items-center justify-center">
-      <p className="text-indigo-400 text-lg animate-pulse">Loading... 🐝</p>
+      <p className="text-indigo-400 text-lg animate-pulse">Loading.... 🐝</p>
     </div>
   );
   if (!user) return <Navigate to="/login" replace />;
@@ -33,9 +33,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={
-          user ? <Navigate to="/" replace /> : <Login />
-        } />
+        <Route path="/login" element={<Login />} />
         <Route path="/" element={
           <ProtectedRoute user={user}><Home /></ProtectedRoute>
         } />
