@@ -102,32 +102,14 @@ export default function Home() {
 
         {/* Botones principales */}
         <button
-          onClick={() => handleDeal("/session")}
-          disabled={stats.total === 0}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black py-6 rounded-3xl text-xl shadow-lg transition-all duration-150 disabled:opacity-40 mb-3"
-        >
-          🎓 Practice
-          <p className="text-sm font-normal opacity-70 mt-1">
-            {isFirstDeal ? "First deal — 10 words" : "Deal next 10 words"}
-          </p>
-        </button>
-
-        <button
           onClick={() => handleDeal("/session-auto")}
           disabled={stats.total === 0}
           className="w-full bg-violet-600 hover:bg-violet-700 active:scale-95 text-white font-black py-6 rounded-3xl text-xl shadow-lg transition-all duration-150 disabled:opacity-40 mb-4"
         >
-          🎙 Practice (Auto)
+          🎙 Practice
           <p className="text-sm font-normal opacity-70 mt-1">
-            Hold button to spell out loud
+            Listen, think, and tap to spell.
           </p>
-        </button>
-
-        <button
-          onClick={() => navigate("/rater")}
-          className="w-full bg-white hover:bg-gray-50 active:scale-95 text-indigo-600 font-bold py-5 rounded-3xl text-xl shadow-sm border border-indigo-100 transition-all duration-150"
-        >
-          🔍 Rater
         </button>
 
         {/* Stats */}
