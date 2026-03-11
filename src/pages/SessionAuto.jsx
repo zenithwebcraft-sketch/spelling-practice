@@ -65,11 +65,14 @@ function WordCardAuto({ word, onResult }) {
   const [revealed, setRevealed] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [countdown, setCountdown] = useState(null);
+  const [thinkingCountdown, setThinkingCountdown] = useState(null);
 
   const recognitionRef = useRef(null);
   const timerRef = useRef(null);
   const countdownRef = useRef(null);
   const transcriptRef = useRef("");
+  const thinkTimerRef = useRef(null);
+  const thinkIntervalRef = useRef(null);
 
   useEffect(() => {
     setSpeaking(true);
@@ -78,15 +81,19 @@ function WordCardAuto({ word, onResult }) {
     setRevealed(false);
     setIsListening(false);
     setCountdown(null);
+    setThinkingCountdown(null);
     transcriptRef.current = "";
 
     speak(word.word, word.sentence, word.grade, () => {
       setSpeaking(false);
+      startThinkingPhase();
     });
 
     return () => {
       clearTimeout(timerRef.current);
       clearInterval(countdownRef.current);
+      clearTimeout(thinkTimerRef.current);
+      clearInterval(thinkIntervalRef.current);
 
       if (recognitionRef.current) {
         recognitionRef.current.onresult = null;
@@ -124,6 +131,35 @@ function WordCardAuto({ word, onResult }) {
     try {
       recognition.stop();
     } catch (e) {}
+  }
+
+  function startThinkingPhase() {
+    let remaining = 20;
+    setThinkingCountdown(remaining);
+
+    thinkIntervalRef.current = setInterval(() => {
+      remaining -= 1;
+      setThinkingCountdown(remaining > 0 ? remaining : null);
+      if (remaining <= 0) {
+        clearInterval(thinkIntervalRef.current);
+        clearTimeout(thinkTimerRef.current);
+        startListening();
+      }
+    }, 1000);
+
+    // Safety timeout por si el interval se desfasa
+    thinkTimerRef.current = setTimeout(() => {
+      clearInterval(thinkIntervalRef.current);
+      setThinkingCountdown(null);
+      startListening();
+    }, 20500);
+  }
+
+  function cancelThinkingAndStart() {
+    clearInterval(thinkIntervalRef.current);
+    clearTimeout(thinkTimerRef.current);
+    setThinkingCountdown(null);
+    startListening();
   }
 
   function startListening() {
@@ -196,7 +232,7 @@ function WordCardAuto({ word, onResult }) {
       setRevealed(false);
       setDisplayLetters("🎙 Listening...");
 
-      const listenTime = Math.max(3000, word.word.length * 600);
+      const listenTime = Math.max(3000, word.word.length * 800);
       let remaining = Math.ceil(listenTime / 1000);
       setCountdown(remaining);
 
@@ -333,18 +369,41 @@ function WordCardAuto({ word, onResult }) {
         }
       `}</style>
 
-      {!status ? (
+      {!status && thinkingCountdown !== null ? (
+        // ── Fase de pensamiento ──────────────────────────────
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-xs text-gray-400 uppercase tracking-widest">
+              Think about the spelling... 🤔
+            </span>
+            <span className="text-7xl font-black text-indigo-300 tabular-nums leading-none">
+              {thinkingCountdown}
+            </span>
+            <div className="w-full bg-gray-100 rounded-full h-2 mt-1">
+              <div
+                className="bg-indigo-300 h-2 rounded-full transition-all duration-1000"
+                style={{ width: `${(thinkingCountdown / 20) * 100}%` }}
+              />
+            </div>
+          </div>
+          <button
+            onClick={cancelThinkingAndStart}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black py-5 rounded-2xl text-lg transition-all"
+          >
+            ✋ Ready! Start now →
+          </button>
+        </div>
+
+      ) : !status ? (
         <button
           onClick={startListening}
           disabled={isListening || speaking}
           className={`w-full ${
-            isListening
-              ? "bg-red-500 cursor-not-allowed"
-              : "bg-indigo-600 hover:bg-indigo-700"
+            isListening ? "bg-red-500 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
           } active:scale-95 text-white font-black py-5 rounded-2xl text-lg transition-all disabled:opacity-70`}
         >
           {isListening
-            ? `🎙 Listening... ${countdown ?? ""}s`
+            ? `🎙 Listening... ${countdown ?? ""}s` 
             : speaking
             ? "⏳ Wait..."
             : "🎙 Tap to spell"}
