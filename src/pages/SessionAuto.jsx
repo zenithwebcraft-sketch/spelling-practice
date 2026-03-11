@@ -59,42 +59,54 @@ function normalizeLettersString(text) {
 }
 
 function WordCardAuto({ word, onResult }) {
-  const [speaking, setSpeaking]         = useState(false);
+  const [speaking, setSpeaking] = useState(false);
   const [displayLetters, setDisplayLetters] = useState("");
-  const [status, setStatus]             = useState(null);
-  const [revealed, setRevealed]         = useState(false);
-  const recognitionRef                  = useRef(null);
-  const [isListening, setIsListening]   = useState(false);
+  const [status, setStatus] = useState(null);
+  const [revealed, setRevealed] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [countdown, setCountdown] = useState(null);
 
-  // TTS al cargar palabra
+  const recognitionRef = useRef(null);
+  const timerRef = useRef(null);
+  const countdownRef = useRef(null);
+  const transcriptRef = useRef("");
+
   useEffect(() => {
     setSpeaking(true);
     setDisplayLetters("");
     setStatus(null);
     setRevealed(false);
     setIsListening(false);
+    setCountdown(null);
+    transcriptRef.current = "";
 
     speak(word.word, word.sentence, word.grade, () => {
       setSpeaking(false);
     });
 
     return () => {
+      clearTimeout(timerRef.current);
+      clearInterval(countdownRef.current);
+
       if (recognitionRef.current) {
         recognitionRef.current.onresult = null;
         recognitionRef.current.onend = null;
-        recognitionRef.current.stop();
+        recognitionRef.current.onerror = null;
+        try {
+          recognitionRef.current.abort();
+        } catch (e) {}
       }
     };
   }, [word.id]);
 
-    function handleResultFromSpeech(rawTranscript) {
+  function handleResultFromSpeech(rawTranscript) {
     const normalized = normalizeLettersString(rawTranscript);
-    const expected   = word.word.toUpperCase();
-    const isCorrect  = normalized === expected;
+    const expected = word.word.toUpperCase();
+    const isCorrect = normalized === expected;
 
-    const letters = normalized.split("");
-    setDisplayLetters(letters.join("-"));
-
+    setDisplayLetters(
+      normalized ? normalized.split("").join("-") : "😅 I didn't catch that"
+    );
     setStatus(isCorrect ? "correct" : "wrong");
     setRevealed(true);
 
@@ -106,58 +118,100 @@ function WordCardAuto({ word, onResult }) {
     }
   }
 
-  function initRecognition() {
+  function stopListening(recognition) {
+    clearTimeout(timerRef.current);
+    clearInterval(countdownRef.current);
+    try {
+      recognition.stop();
+    } catch (e) {}
+  }
+
+  function startListening() {
+    if (status || isListening || speaking) return;
+
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       alert("Speech Recognition no soportado en este navegador 😞");
-      return null;
+      return;
     }
+
+    transcriptRef.current = "";
 
     const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
 
     recognition.onresult = (event) => {
-      const finalTranscript = event.results[0][0].transcript;
-      handleResultFromSpeech(finalTranscript);
+      let combined = "";
+
+      for (let i = 0; i < event.results.length; i++) {
+        combined += `${event.results[i][0].transcript} `;
+      }
+
+      transcriptRef.current = combined.trim();
+
+      const normalized = normalizeLettersString(transcriptRef.current);
+      setDisplayLetters(
+        normalized ? normalized.split("").join("-") : "🎙 Listening..."
+      );
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+      setCountdown(null);
+      clearTimeout(timerRef.current);
+      clearInterval(countdownRef.current);
+      setDisplayLetters("😅 Try again");
+      recognitionRef.current = null;
     };
 
     recognition.onend = () => {
       setIsListening(false);
+      setCountdown(null);
+      clearTimeout(timerRef.current);
+      clearInterval(countdownRef.current);
       recognitionRef.current = null;
+
+      const transcript = transcriptRef.current.trim();
+
+      if (!transcript) {
+        setDisplayLetters("😅 I didn't catch that. Tap to try again");
+        return;
+      }
+
+      handleResultFromSpeech(transcript);
     };
 
     recognitionRef.current = recognition;
-    return recognition;
-  }
-
-  function handlePressStart() {
-    if (status) return; // ya validado, no seguir escuchando
-
-    let recognition = recognitionRef.current || initRecognition();
-    if (!recognition) return;
 
     try {
       recognition.start();
       setIsListening(true);
-      setDisplayLetters("🎙 Listening...");
       setStatus(null);
       setRevealed(false);
-    } catch (e) {
-      // Chrome lanza error si se llama start() mientras ya está en marcha
-      console.warn("Recognition start error:", e);
-    }
-  }
+      setDisplayLetters("🎙 Listening...");
 
-  function handlePressEnd() {
-    if (!recognitionRef.current) return;
-    try {
-      recognitionRef.current.stop(); // dispara onresult/onend con lo que tenga hasta ahora
+      const listenTime = Math.max(3000, word.word.length * 600);
+      let remaining = Math.ceil(listenTime / 1000);
+      setCountdown(remaining);
+
+      countdownRef.current = setInterval(() => {
+        remaining -= 1;
+        if (remaining >= 0) setCountdown(remaining);
+        if (remaining <= 0) clearInterval(countdownRef.current);
+      }, 1000);
+
+      timerRef.current = setTimeout(() => {
+        stopListening(recognition);
+      }, listenTime);
     } catch (e) {
-      console.warn("Recognition stop error:", e);
+      setIsListening(false);
+      setCountdown(null);
+      recognitionRef.current = null;
     }
   }
 
@@ -173,8 +227,6 @@ function WordCardAuto({ word, onResult }) {
 
   return (
     <div className="bg-white rounded-3xl shadow-lg p-8 flex flex-col gap-7">
-
-      {/* Grado + ID */}
       <div className="flex items-center justify-between">
         <span className="text-sm font-bold uppercase tracking-widest text-indigo-300">
           {word.grade} Grade
@@ -184,7 +236,6 @@ function WordCardAuto({ word, onResult }) {
         </span>
       </div>
 
-      {/* Botón repetir */}
       <button
         onClick={() => {
           setSpeaking(true);
@@ -192,13 +243,13 @@ function WordCardAuto({ word, onResult }) {
         }}
         className="flex items-center justify-center gap-2 text-indigo-500 hover:text-indigo-700 transition-colors text-base font-semibold"
       >
-        {speaking
-          ? <span className="animate-pulse">🔊 Playing...</span>
-          : <span>🔁 Repeat word</span>
-        }
+        {speaking ? (
+          <span className="animate-pulse">🔊 Playing...</span>
+        ) : (
+          <span>🔁 Repeat word</span>
+        )}
       </button>
 
-      {/* Oración con palabra enmascarada */}
       <div className="bg-gray-50 rounded-2xl px-5 py-5">
         <span className="text-xs text-gray-300 uppercase tracking-widest block mb-3">
           Sentence
@@ -226,61 +277,76 @@ function WordCardAuto({ word, onResult }) {
         </p>
       </div>
 
-      {/* Campo de letras escuchadas */}
-<div>
-  <span className="text-xs text-gray-300 uppercase tracking-widest block mb-2">
-    Say the letters one by one →
-  </span>
-  <div
-    className={`w-full text-center text-2xl font-mono font-bold rounded-2xl border-2 py-4 px-4 transition-all duration-300 tracking-widest ${inputBg}`}
-    style={{
-      animation: status === "correct" 
-        ? "bounce 0.6s ease-in-out" 
-        : status === "wrong" 
-        ? "shake 0.5s ease-in-out" 
-        : "none"
-    }}
-  >
-    {displayLetters || "🎙 Click the button to start"}
-  </div>
-  {status === "correct" && (
-    <p className="text-center text-green-500 font-bold mt-2 text-lg animate-bounce">
-      ✅ Perfect! 🎉
-    </p>
-  )}
-  {status === "wrong" && (
-    <p className="text-center text-red-400 font-bold mt-2 text-lg">
-      ❌ Not quite — check the spelling below
-    </p>
-  )}
-</div>
+      <div>
+        <span className="text-xs text-gray-300 uppercase tracking-widest block mb-2">
+          Say the letters one by one →
+        </span>
+        <div
+          className={`w-full text-center text-2xl font-mono font-bold rounded-2xl border-2 py-4 px-4 transition-all duration-300 tracking-widest ${inputBg}`}
+          style={{
+            animation:
+              status === "correct"
+                ? "bounce 0.6s ease-in-out"
+                : status === "wrong"
+                ? "shake 0.5s ease-in-out"
+                : "none",
+          }}
+        >
+          {displayLetters || "🎙 Tap the button to start"}
+        </div>
 
-<style jsx>{`
-  @keyframes bounce {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-  }
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-4px); }
-    75% { transform: translateX(4px); }
-  }
-`}</style>
+        {status === "correct" && (
+          <p className="text-center text-green-500 font-bold mt-2 text-lg animate-bounce">
+            ✅ Perfect! 🎉
+          </p>
+        )}
 
+        {status === "wrong" && (
+          <p className="text-center text-red-400 font-bold mt-2 text-lg">
+            ❌ Not quite — check the spelling below
+          </p>
+        )}
+      </div>
 
-      {/* Botón de escucha: push-to-talk */}
+      <style jsx>{`
+        @keyframes bounce {
+          0%,
+          100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+        }
+        @keyframes shake {
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          25% {
+            transform: translateX(-4px);
+          }
+          75% {
+            transform: translateX(4px);
+          }
+        }
+      `}</style>
+
       {!status ? (
         <button
-          onMouseDown={handlePressStart}
-          onMouseUp={handlePressEnd}
-          onMouseLeave={handlePressEnd}
-          onTouchStart={handlePressStart}
-          onTouchEnd={handlePressEnd}
+          onClick={startListening}
+          disabled={isListening || speaking}
           className={`w-full ${
-            isListening ? "bg-red-600" : "bg-indigo-600"
-          } hover:bg-indigo-700 active:scale-95 text-white font-black py-5 rounded-2xl text-lg transition-all`}
+            isListening
+              ? "bg-red-500 cursor-not-allowed"
+              : "bg-indigo-600 hover:bg-indigo-700"
+          } active:scale-95 text-white font-black py-5 rounded-2xl text-lg transition-all disabled:opacity-70`}
         >
-          {isListening ? "🎙 Release to stop" : "🎙 Hold to spell"}
+          {isListening
+            ? `🎙 Listening... ${countdown ?? ""}s`
+            : speaking
+            ? "⏳ Wait..."
+            : "🎙 Tap to spell"}
         </button>
       ) : status === "wrong" ? (
         <div className="grid grid-cols-2 gap-4">
@@ -299,7 +365,6 @@ function WordCardAuto({ word, onResult }) {
         </div>
       ) : null}
 
-      {/* Spelling revelado */}
       {revealed && (
         <div className="bg-indigo-50 rounded-2xl px-5 py-4 text-center">
           <span className="text-xs text-indigo-300 uppercase tracking-widest block mb-2">
