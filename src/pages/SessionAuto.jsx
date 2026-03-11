@@ -141,23 +141,24 @@ function WordCardAuto({ word, onResult }) {
 
     const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
+    recognition.continuous = false;      // ← natural speech-end detection
+    recognition.interimResults = false;  // ← solo resultado final, limpio
+    recognition.maxAlternatives = 3;     // ← revisa alternativas también
 
     recognition.onresult = (event) => {
-      let combined = "";
+      // Con continuous:false, siempre es results[0]
+      // Revisa las alternativas para encontrar la que mejor matchea
+      let bestMatch = "";
+      const expected = word.word.toUpperCase();
 
-      for (let i = 0; i < event.results.length; i++) {
-        combined += `${event.results[i][0].transcript} `;
+      for (let i = 0; i < event.results[0].length; i++) {
+        const alt = normalizeLettersString(event.results[0][i].transcript);
+        if (alt === expected) { bestMatch = alt; break; }
+        if (!bestMatch) bestMatch = alt;
       }
 
-      transcriptRef.current = combined.trim();
-
-      const normalized = normalizeLettersString(transcriptRef.current);
-      setDisplayLetters(
-        normalized ? normalized.split("").join("-") : "🎙 Listening..."
-      );
+      transcriptRef.current = bestMatch;
+      setDisplayLetters(bestMatch ? bestMatch.split("").join("-") : "🎙 Processing...");
     };
 
     recognition.onerror = () => {
