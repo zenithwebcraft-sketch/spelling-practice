@@ -69,8 +69,8 @@ const useSpellingStore = create(
 
       // ── Deal ────────────────────────────────────────────────
       deal: () => {
-        const { isFirstDeal, sessionNumber, getActiveWords } = get();
-        const hand = dealWords(getActiveWords(), isFirstDeal);
+        const { sessionNumber, getActiveWords } = get();
+        const hand = dealWords(getActiveWords()); // ← sin isFirstDeal
         set({
           currentDeal:   hand,
           currentIndex:  0,

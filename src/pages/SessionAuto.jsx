@@ -404,9 +404,49 @@ export default function SessionAuto() {
   const sessionNumber = useSpellingStore(s => s.sessionNumber);
   const words         = useSpellingStore(s => s.words);
 
+  const deal = useSpellingStore(s => s.deal);
+
   useEffect(() => {
-    if (currentDeal.length === 0) navigate("/");
+    if (currentDeal.length === 0) {
+      const activeWords = words.filter(/* según activeGrade */);
+      const allDone =
+        activeWords.length > 0 &&
+        activeWords.every(w => w.status === "mastered");
+
+      if (!allDone) navigate("/"); // no hay deal preparado, volver a Home
+      // si allDone === true, se queda y muestra la pantalla de abajo
+    }
   }, []);
+
+  // ── Todo dominado ───────────────────────────────────────────
+const activeWords = useSpellingStore(s => s.getActiveWords)();
+const allMastered =
+  currentDeal.length === 0 &&
+  activeWords.length > 0 &&
+  activeWords.every(w => w.status === "mastered");
+
+if (allMastered) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-purple-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-lg p-8 max-w-sm w-full text-center">
+        <div className="text-7xl mb-4">🏆</div>
+        <h2 className="text-2xl font-black text-violet-800 mb-2">
+          All Words Mastered!
+        </h2>
+        <p className="text-gray-400 text-sm mb-8">
+          You've gone through every word in this list. Amazing work! 🎉
+        </p>
+        <button
+          onClick={() => navigate("/")}
+          className="w-full bg-violet-600 hover:bg-violet-700 active:scale-95 text-white font-bold py-4 rounded-2xl text-lg transition-all"
+        >
+          🏠 Back to Home
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
   const total    = currentDeal.length;
   const done     = currentIndex;
